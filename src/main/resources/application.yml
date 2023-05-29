@@ -1,0 +1,80 @@
+spring:
+  kafka:
+    producer:
+      value-serializer: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      value-deserializer: io.confluent.kafka.streams.serdes.avro.SpecificAvroDeserializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    properties:
+      schema.registry.url: ${schemaRegistryUrl}
+  cloud:
+    function:
+      definition: functionRouter;myTopicProducer;AvroClassOne;AvroClassTwo;storeAvroClassOne;storeAvroClassTwo
+      routing-expression: payload.getClass().getSimpleName()
+    stream:
+      bindings:
+        functionRouter-in-0:
+          destination: my-topic
+          group: my-spring-application
+          content-type: application/*+avro
+          consumer:
+            use-native-decoding: true
+        myTopicProducer-out-0:
+          destination: my-topic
+          content-type: application/*+avro
+          producer:
+            use-native-encoding: true
+        AvroClassOne-out-0:
+          destination: my-second-topic
+          content-type: application/*+avro
+          producer:
+            use-native-encoding: true
+        AvroClassTwo-out-0:
+          destination: my-third-topic
+          content-type: application/*+avro
+          producer:
+            use-native-encoding: true
+        storeAvroClassOne-in-0:
+          destination: my-second-topic
+          group: my-spring-application
+          content-type: application/*+avro
+          consumer:
+            use-native-decoding: true
+        storeAvroClassTwo-in-0:
+          destination: my-third-topic
+          group: my-spring-application
+          content-type: application/*+avro
+          consumer:
+            use-native-decoding: true
+
+      kafka:
+        streams:
+          bindings:
+            myCustomTopicConsumer-in-0:
+              consumer:
+                start-offset: earliest
+                reset-offsets: true
+                key-serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+                value-serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+            myCustomTopicProducer-in-0:
+              producer:
+                key-serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+                value-serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+            myOtherTopicConsumer-in-0:
+              consumer:
+                start-offset: earliest
+                reset-offsets: true
+                key-serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+                value-serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+            myOtherTopicProducer-in-0:
+              producer:
+                key-serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+                value-serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+        binder:
+          brokers: localhost:9092
+          producer-properties:
+            schema.registry.url: ${schemaRegistryUrl}
+          consumer-properties:
+            schema.registry.url: ${schemaRegistryUrl}
+schemaRegistryUrl: http://localhost:8081

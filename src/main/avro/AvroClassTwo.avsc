@@ -1,0 +1,9 @@
+{
+  "type" : "record",
+  "namespace" : "com.example.kafkajavatest",
+  "name" : "AvroClassTwo",
+  "fields" : [
+    { "name" : "Weight" , "type" : "string" },
+    { "name" : "Height" , "type" : "string" }
+  ]
+}
